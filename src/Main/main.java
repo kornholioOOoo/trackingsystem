@@ -22,7 +22,7 @@ public class main {
         char cont;
 
         do {
-            System.out.println("===== MAIN MENU =====");
+            System.out.println("===== WELCOME TO MY ACADEMIC TRACKING SYSTEM! =====");
             System.out.println("1. Login");
             System.out.println("2. Register");
             System.out.println("3. Exit");
@@ -36,14 +36,26 @@ public class main {
                     System.out.print("Enter Password: ");
                     String pas = sc.next();
 
-                    while (true) {
+                    int loginAttempts = 0;
+                    boolean loginSuccess = false;
 
+                    while (loginAttempts < 3 && !loginSuccess) {  
                         String qry = "SELECT * FROM tbl_users WHERE u_email = ? AND u_pass = ?";
                         java.util.List<java.util.Map<String, Object>> result = conf.fetchRecords(qry, em, pas);
 
                         if (result.isEmpty()) {
-                            System.out.println("INVALID CREDENTIALS");
-                            break;
+                            loginAttempts++;
+                            System.out.println("INVALID CREDENTIALS. Attempt " + loginAttempts + " of 3.");
+                            if (loginAttempts == 3) {
+                                System.out.println("Too many failed attempts. Exiting program.");
+                                System.exit(0); 
+                            } else {
+                                System.out.println("Please try again.");
+                                System.out.print("Enter email: ");
+                                em = sc.next(); 
+                                System.out.print("Enter Password: ");
+                                pas = sc.next();  
+                            }
                         } else {
                             java.util.Map<String, Object> user = result.get(0);
                             String stat = user.get("u_status").toString();
@@ -54,12 +66,12 @@ public class main {
                             } else {
                                 System.out.println("LOGIN SUCCESS!");
                                 if (type.equals("Admin")) {
-                                    System.out.println("WELCOME TO ADMIN DASHBOARD");
+                                    System.out.println("-----ADMIN DASHBOARD");
 
                                     boolean adminLoggedIn = true;
                                     while (adminLoggedIn) {
                                         System.out.println("\n--- ADMIN MENU ---");
-                                        System.out.println("1. Approve Account");
+                                        System.out.println("1. Manage Pending Accounts");
                                         System.out.println("2. View Users");
                                         System.out.println("3. Update Users");
                                         System.out.println("4. Delete Users");
@@ -85,27 +97,40 @@ public class main {
                                                 viewUsers();
                                                 System.out.print("Enter ID to Update: ");
                                                 int id = sc.nextInt();
-                                                sc.nextLine(); // consume newline
+                                                sc.nextLine();
 
                                                 System.out.print("Enter new name: ");
                                                 String newName = sc.nextLine();
 
                                                 System.out.print("Enter new email: ");
                                                 String newEmail = sc.nextLine();
+                                                
+                                                while (true) {
+
+                                                    String qy = "SELECT * FROM tbl_users WHERE u_email = ?";
+                                                    java.util.List<java.util.Map<String, Object>> res = conf.fetchRecords(qy, newEmail);
+
+                                                    if (res.isEmpty()) {
+                                                        break;
+                                                    } else {
+                                                        System.out.print("Email already exists, Enter other Email: ");
+                                                        newEmail = sc.next();
+                                                    }
+                                                }
 
                                                 System.out.print("Enter new type (1. Admin / 2. Teacher / 3. Student): ");
                                                 int newType = sc.nextInt();
-                                                    while (newType > 2 || newType < 1) {
-                                                        System.out.print("Invalid, choose between 1 & 2 only: ");
-                                                    }
-                                                    String tpe = "";
-                                                    if (newType == 1) {
-                                                        tpe = "Admin";
-                                                    } else if (newType == 2){
-                                                        tpe = "Teacher";
-                                                    } else {
-                                                        tpe = "Student";
-                                                    }           
+                                                while (newType < 1 || newType > 3) {
+                                                    System.out.print("Invalid, choose between 1 & 2 only: ");
+                                                }
+                                                String tpe = "";
+                                                if (newType == 1) {
+                                                    tpe = "Admin";
+                                                } else if (newType == 2) {
+                                                    tpe = "Teacher";
+                                                } else {
+                                                    tpe = "Student";
+                                                }
                                                 System.out.print("Enter new password: ");
                                                 String newPass = sc.nextLine();
 
@@ -137,16 +162,25 @@ public class main {
                                     boolean teacherLoggedIn = true;
                                     while (teacherLoggedIn) {
                                         System.out.println("\n--- TEACHER MENU ---");
-                                        System.out.println("1. ");
-                                        System.out.println("2. Logout");
+                                        System.out.println("1. Add Grades");
+                                        System.out.println("2. View Students");
+                                        System.out.println("3. Logout");
                                         System.out.print("Enter Action: ");
                                         int tAction = sc.nextInt();
 
                                         switch (tAction) {
                                             case 1:
                                                 viewUsers();
+                                                System.out.print("Enter ID of student to add grades: ");
+                                                int ide = sc.nextInt();
+                                                sc.nextLine();
+                                                
+                                                
                                                 break;
                                             case 2:
+                                                viewUsers();
+                                                break;
+                                            case 3:
                                                 System.out.println("Logging out...");
                                                 teacherLoggedIn = false;
                                                 break;
@@ -154,14 +188,13 @@ public class main {
                                                 System.out.println("Invalid option.");
                                         }
                                     }
-                                }
-
-                                break;
+                                } 
                             }
 
+                            loginSuccess = true;  
+                            break;  
                         }
                     }
-
                     break;
 
                 case 2:
@@ -185,24 +218,25 @@ public class main {
 
                     System.out.print("Enter user Type (1 - Admin / 2 -Teacher / 3. Student ): ");
                     int type = sc.nextInt();
-                    while (type > 2 || type < 1) {
+                    while (type < 1 || type > 3) {
                         System.out.print("Invalid, choose between 1, 2, & 3 only: ");
                         type = sc.nextInt();
                     }
                     String tp = "";
                     if (type == 1) {
                         tp = "Admin";
-                    } else if (type == 2){
+                    } else if (type == 2) {
                         tp = "Teacher";
                     } else {
                         tp = "Student";
+                    }
                     System.out.print("Enter Password: ");
                     String pass = sc.next();
 
                     String sql = "INSERT INTO tbl_users (u_name, u_email, u_type, u_status, u_pass) VALUES (?, ?, ?, ?, ?)";
                     conf.addRecord(sql, name, email, tp, "Pending", pass);
                     break;
-                    }
+
                 case 3:
                     System.exit(0);
                     break;
