@@ -66,7 +66,7 @@ public class main {
                             } else {
                                 System.out.println("LOGIN SUCCESS!");
                                 if (type.equals("Admin")) {
-                                    System.out.println("-----ADMIN DASHBOARD");
+                                    System.out.println("-----ADMIN DASHBOARD-----");
 
                                     boolean adminLoggedIn = true;
                                     while (adminLoggedIn) {
@@ -120,6 +120,8 @@ public class main {
 
                                                 System.out.print("Enter new type (1. Admin / 2. Teacher / 3. Student): ");
                                                 int newType = sc.nextInt();
+                                                sc.nextLine();
+                                                
                                                 while (newType < 1 || newType > 3) {
                                                     System.out.print("Invalid, choose between 1 & 2 only: ");
                                                 }
@@ -134,8 +136,8 @@ public class main {
                                                 System.out.print("Enter new password: ");
                                                 String newPass = sc.nextLine();
 
-                                                String updateSql = "UPDATE tbl_users SET u_name = ?, u_email = ?, u_type = ?, u_pass = ? WHERE u_id = ?";
-                                                conf.updateRecord(updateSql, newName, newEmail, tpe, newPass, id);
+                                                String updateSql = "UPDATE tbl_users SET u_name = ?, u_email = ?, u_type = ?, u_status = ?, u_pass = ? WHERE u_id = ?";
+                                                conf.updateRecord(updateSql, newName, newEmail, tpe, "Approved", newPass, id);
                                                 break;
 
                                             case 4:
@@ -157,38 +159,11 @@ public class main {
                                         }
                                     }
                                 } else if (type.equals("Teacher")) {
-                                    System.out.println("WELCOME TO TEACHER DASHBOARD");
+                                    teacher.displayTeacherDashboard(user.get("u_name").toString());
+                                } else if (type.equals("Student")) {
+                                    student.displayStudentDashboard(user.get("u_name").toString());
+                                }
 
-                                    boolean teacherLoggedIn = true;
-                                    while (teacherLoggedIn) {
-                                        System.out.println("\n--- TEACHER MENU ---");
-                                        System.out.println("1. Add Grades");
-                                        System.out.println("2. View Students");
-                                        System.out.println("3. Logout");
-                                        System.out.print("Enter Action: ");
-                                        int tAction = sc.nextInt();
-
-                                        switch (tAction) {
-                                            case 1:
-                                                viewUsers();
-                                                System.out.print("Enter ID of student to add grades: ");
-                                                int ide = sc.nextInt();
-                                                sc.nextLine();
-                                                
-                                                
-                                                break;
-                                            case 2:
-                                                viewUsers();
-                                                break;
-                                            case 3:
-                                                System.out.println("Logging out...");
-                                                teacherLoggedIn = false;
-                                                break;
-                                            default:
-                                                System.out.println("Invalid option.");
-                                        }
-                                    }
-                                } 
                             }
 
                             loginSuccess = true;  
