@@ -66,7 +66,7 @@ public class main {
                             } else {
                                 System.out.println("LOGIN SUCCESS!");
                                 if (type.equals("Admin")) {
-                                    System.out.println("-----ADMIN DASHBOARD-----");
+                                    System.out.println("===== REGISTRAR DASHBOARD =====");
 
                                     boolean adminLoggedIn = true;
                                     while (adminLoggedIn) {
@@ -118,7 +118,7 @@ public class main {
                                                     }
                                                 }
 
-                                                System.out.print("Enter new type (1. Admin / 2. Teacher / 3. Student): ");
+                                                System.out.print("Enter new type (1. Registrar / 2. Teacher / 3. Student): ");
                                                 int newType = sc.nextInt();
                                                 sc.nextLine();
                                                 
@@ -127,7 +127,7 @@ public class main {
                                                 }
                                                 String tpe = "";
                                                 if (newType == 1) {
-                                                    tpe = "Admin";
+                                                    tpe = "Registrar";
                                                 } else if (newType == 2) {
                                                     tpe = "Teacher";
                                                 } else {
@@ -191,7 +191,7 @@ public class main {
                         }
                     }
 
-                    System.out.print("Enter user Type (1 - Admin / 2 -Teacher / 3. Student ): ");
+                    System.out.print("Enter user Type (1 - Registrar / 2 -Teacher / 3. Student ): ");
                     int type = sc.nextInt();
                     while (type < 1 || type > 3) {
                         System.out.print("Invalid, choose between 1, 2, & 3 only: ");
@@ -199,7 +199,7 @@ public class main {
                     }
                     String tp = "";
                     if (type == 1) {
-                        tp = "Admin";
+                        tp = "Registrar";
                     } else if (type == 2) {
                         tp = "Teacher";
                     } else {
