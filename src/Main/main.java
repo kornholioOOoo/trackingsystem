@@ -123,7 +123,7 @@ public class main {
                                                 sc.nextLine();
                                                 
                                                 while (newType < 1 || newType > 3) {
-                                                    System.out.print("Invalid, choose between 1 & 2 only: ");
+                                                    System.out.print("Invalid, choose between 1, 2, & 3 only: ");
                                                 }
                                                 String tpe = "";
                                                 if (newType == 1) {
