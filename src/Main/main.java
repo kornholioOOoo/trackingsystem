@@ -17,7 +17,7 @@ public class main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         config conf = new config();
-        conf.connectDB();
+        config.connectDB();
         int choice;
         char cont;
 
