@@ -36,138 +36,128 @@ public class main {
                     System.out.print("Enter Password: ");
                     String pas = sc.next();
 
+                    // ✅ Hash password before login check
+                    String hashedLoginPass = config.hashPassword(pas);
+
                     int loginAttempts = 0;
                     boolean loginSuccess = false;
 
-                    while (loginAttempts < 3 && !loginSuccess) {  
+                    while (loginAttempts < 3 && !loginSuccess) {
                         String qry = "SELECT * FROM tbl_users WHERE u_email = ? AND u_pass = ?";
-                        java.util.List<java.util.Map<String, Object>> result = conf.fetchRecords(qry, em, pas);
+                        java.util.List<java.util.Map<String, Object>> result = conf.fetchRecords(qry, em, hashedLoginPass);
 
                         if (result.isEmpty()) {
                             loginAttempts++;
-                            System.out.println("INVALID CREDENTIALS. Attempt " + loginAttempts + " of 3.");
+                            System.out.println("INVALID CREDENTIALS. Attempt " + loginAttempts + " of 3");
+
                             if (loginAttempts == 3) {
                                 System.out.println("Too many failed attempts. Exiting program.");
-                                System.exit(0); 
-                            } else {
-                                System.out.println("Please try again.");
-                                System.out.print("Enter email: ");
-                                em = sc.next(); 
-                                System.out.print("Enter Password: ");
-                                pas = sc.next();  
+                                System.exit(0);
                             }
+
+                            System.out.print("Enter email: ");
+                            em = sc.next();
+                            System.out.print("Enter Password: ");
+                            pas = sc.next();
+                            hashedLoginPass = config.hashPassword(pas);
+
                         } else {
                             java.util.Map<String, Object> user = result.get(0);
                             String stat = user.get("u_status").toString();
                             String type = user.get("u_type").toString();
+
                             if (stat.equals("Pending")) {
-                                System.out.println("Account is Pending, Contact the Admin!");
+                                System.out.println("Account is Pending. Contact the Admin.");
                                 break;
-                            } else {
-                                System.out.println("LOGIN SUCCESS!");
-                                if (type.equals("Admin")) {
-                                    System.out.println("===== REGISTRAR DASHBOARD =====");
-
-                                    boolean adminLoggedIn = true;
-                                    while (adminLoggedIn) {
-                                        System.out.println("\n--- ADMIN MENU ---");
-                                        System.out.println("1. Manage Pending Accounts");
-                                        System.out.println("2. View Users");
-                                        System.out.println("3. Update Users");
-                                        System.out.println("4. Delete Users");
-                                        System.out.println("5. Logout");
-                                        System.out.print("Enter Action: ");
-                                        int action = sc.nextInt();
-
-                                        switch (action) {
-                                            case 1:
-                                                viewUsers();
-                                                System.out.print("Enter ID to Approve: ");
-                                                int ids = sc.nextInt();
-
-                                                String sql = "UPDATE tbl_users SET u_status = ? WHERE u_id = ?";
-                                                conf.updateRecord(sql, "Approved", ids);
-                                                break;
-
-                                            case 2:
-                                                viewUsers();
-                                                break;
-
-                                            case 3:
-                                                viewUsers();
-                                                System.out.print("Enter ID to Update: ");
-                                                int id = sc.nextInt();
-                                                sc.nextLine();
-
-                                                System.out.print("Enter new name: ");
-                                                String newName = sc.nextLine();
-
-                                                System.out.print("Enter new email: ");
-                                                String newEmail = sc.nextLine();
-                                                
-                                                while (true) {
-
-                                                    String qy = "SELECT * FROM tbl_users WHERE u_email = ?";
-                                                    java.util.List<java.util.Map<String, Object>> res = conf.fetchRecords(qy, newEmail);
-
-                                                    if (res.isEmpty()) {
-                                                        break;
-                                                    } else {
-                                                        System.out.print("Email already exists, Enter other Email: ");
-                                                        newEmail = sc.next();
-                                                    }
-                                                }
-
-                                                System.out.print("Enter new type (1. Registrar / 2. Teacher / 3. Student): ");
-                                                int newType = sc.nextInt();
-                                                sc.nextLine();
-                                                
-                                                while (newType < 1 || newType > 3) {
-                                                    System.out.print("Invalid, choose between 1, 2, & 3 only: ");
-                                                }
-                                                String tpe = "";
-                                                if (newType == 1) {
-                                                    tpe = "Registrar";
-                                                } else if (newType == 2) {
-                                                    tpe = "Teacher";
-                                                } else {
-                                                    tpe = "Student";
-                                                }
-                                                System.out.print("Enter new password: ");
-                                                String newPass = sc.nextLine();
-
-                                                String updateSql = "UPDATE tbl_users SET u_name = ?, u_email = ?, u_type = ?, u_status = ?, u_pass = ? WHERE u_id = ?";
-                                                conf.updateRecord(updateSql, newName, newEmail, tpe, "Approved", newPass, id);
-                                                break;
-
-                                            case 4:
-                                                viewUsers();
-                                                System.out.print("Enter ID to Delete: ");
-                                                int delId = sc.nextInt();
-
-                                                String deleteSql = "DELETE FROM tbl_users WHERE u_id = ?";
-                                                conf.updateRecord(deleteSql, delId);
-                                                break;
-
-                                            case 5:
-                                                System.out.println("Logging out...");
-                                                adminLoggedIn = false;
-                                                break;
-
-                                            default:
-                                                System.out.println("Invalid option.");
-                                        }
-                                    }
-                                } else if (type.equals("Teacher")) {
-                                    teacher.displayTeacherDashboard(user.get("u_name").toString());
-                                } else if (type.equals("Student")) {
-                                    student.displayStudentDashboard(user.get("u_name").toString());
-                                }
-
                             }
 
-                            loginSuccess = true;  
-                            break;  
+                            System.out.println("LOGIN SUCCESS!");
+
+                            if (type.equals("Registrar")) {
+                                boolean adminLoggedIn = true;
+                                while (adminLoggedIn) {
+                                    System.out.println("\n===== REGISTRAR DASHBOARD =====");
+                                    System.out.println("1. Manage Pending Accounts");
+                                    System.out.println("2. Manage Subjects");
+                                    System.out.println("3. Manage Grades");
+                                    System.out.println("4. View Users");
+                                    System.out.println("5. Update Users");
+                                    System.out.println("6. Delete Users");
+                                    System.out.println("7. Logout");
+                                    System.out.print("Enter Action: ");
+                                    int action = sc.nextInt();
+
+                                    switch (action) {
+                                        case 1:
+                                            viewUsers();
+                                            System.out.print("Enter ID to Approve: ");
+                                            int ids = sc.nextInt();
+                                            String sql = "UPDATE tbl_users SET u_status = ? WHERE u_id = ?";
+                                            conf.updateRecord(sql, "Approved", ids);
+                                            break;
+
+                                        case 2:
+                                            System.out.println("[Manage Subjects Section]");
+                                            break;
+
+                                        case 3:
+                                            System.out.println("[Manage Grades Section]");
+                                            break;
+
+                                        case 4:
+                                            viewUsers();
+                                            break;
+
+                                        case 5:
+                                            viewUsers();
+                                            System.out.print("Enter ID to Update: ");
+                                            int id = sc.nextInt();
+                                            sc.nextLine();
+
+                                            System.out.print("Enter new name: ");
+                                            String newName = sc.nextLine();
+
+                                            System.out.print("Enter new email: ");
+                                            String newEmail = sc.nextLine();
+
+                                            System.out.print("Enter new type (1. Registrar / 2. Teacher / 3. Student): ");
+                                            int newType = sc.nextInt();
+                                            sc.nextLine();
+
+                                            String tpe = (newType == 1) ? "Registrar" : (newType == 2) ? "Teacher" : "Student";
+
+                                            System.out.print("Enter new password: ");
+                                            String newPass = sc.nextLine();
+
+                                            // ✅ Hash password on update
+                                            String hashedNewPass = config.hashPassword(newPass);
+
+                                            String updateSql = "UPDATE tbl_users SET u_name = ?, u_email = ?, u_type = ?, u_status = ?, u_pass = ? WHERE u_id = ?";
+                                            conf.updateRecord(updateSql, newName, newEmail, tpe, "Approved", hashedNewPass, id);
+                                            break;
+
+                                        case 6:
+                                            viewUsers();
+                                            System.out.print("Enter ID to Delete: ");
+                                            int delId = sc.nextInt();
+                                            String deleteSql = "DELETE FROM tbl_users WHERE u_id = ?";
+                                            conf.updateRecord(deleteSql, delId);
+                                            break;
+
+                                        case 7:
+                                            System.out.println("Logging out...");
+                                            adminLoggedIn = false;
+                                            break;
+
+                                        default:
+                                            System.out.println("Invalid option.");
+                                    }
+                                }
+                                break;
+                            }
+
+                            loginSuccess = true;
+                            System.out.println("Logging out...");
                         }
                     }
                     break;
@@ -178,41 +168,24 @@ public class main {
                     System.out.print("Enter user email: ");
                     String email = sc.next();
 
-                    while (true) {
-
-                        String qry = "SELECT * FROM tbl_users WHERE u_email = ?";
-                        java.util.List<java.util.Map<String, Object>> result = conf.fetchRecords(qry, email);
-
-                        if (result.isEmpty()) {
-                            break;
-                        } else {
-                            System.out.print("Email already exists, Enter other Email: ");
-                            email = sc.next();
-                        }
-                    }
-
                     System.out.print("Enter user Type (1 - Registrar / 2 -Teacher / 3. Student ): ");
                     int type = sc.nextInt();
-                    while (type < 1 || type > 3) {
-                        System.out.print("Invalid, choose between 1, 2, & 3 only: ");
-                        type = sc.nextInt();
-                    }
-                    String tp = "";
-                    if (type == 1) {
-                        tp = "Registrar";
-                    } else if (type == 2) {
-                        tp = "Teacher";
-                    } else {
-                        tp = "Student";
-                    }
+                    String tp = (type == 1) ? "Registrar" : (type == 2) ? "Teacher" : "Student";
+
                     System.out.print("Enter Password: ");
                     String pass = sc.next();
 
-                    String sql = "INSERT INTO tbl_users (u_name, u_email, u_type, u_status, u_pass) VALUES (?, ?, ?, ?, ?)";
-                    conf.addRecord(sql, name, email, tp, "Pending", pass);
+                    // ✅ Hash password before storing
+                    String hashedPass = config.hashPassword(pass);
+
+                    String sql2 = "INSERT INTO tbl_users (u_name, u_email, u_type, u_status, u_pass) VALUES (?, ?, ?, ?, ?)";
+                    conf.addRecord(sql2, name, email, tp, "Pending", hashedPass);
+
+                    System.out.println("Registration successful! Waiting for approval.");
                     break;
 
                 case 3:
+                    System.out.println("Goodbye!");
                     System.exit(0);
                     break;
 
@@ -220,6 +193,7 @@ public class main {
                     System.out.println("Invalid choice.");
             }
 
+            // ✅ Show this ONLY after logout / finish action.
             System.out.print("Do you want to continue? (Y/N): ");
             cont = sc.next().charAt(0);
 
