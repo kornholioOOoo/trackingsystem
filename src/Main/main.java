@@ -14,16 +14,16 @@ public class main {
         conf.viewRecords(Query, votersHeaders, votersColumns);
     }
 
-    // ---- VIEW SUBJECTS ----   (u_id REMOVED)
+    // ---- VIEW SUBJECTS ----
     public static void viewSubjects() {
         config conf = new config();
-        String query = "SELECT s_id, s_code, s_name, units, y_level, sem, status FROM tbl_subjects";
-        String[] headers = {"Subject ID", "Code", "Name", "Units", "Year Level", "Semester", "Status"};
-        String[] columns = {"s_id", "s_code", "s_name", "units", "y_level", "sem", "status"};
+        String query = "SELECT s_id, s_code, s_name, units, y_level, sem FROM tbl_subjects";
+        String[] headers = {"Subject ID", "Code", "Name", "Units", "Year Level", "Semester"};
+        String[] columns = {"s_id", "s_code", "s_name", "units", "y_level", "sem"};
         conf.viewRecords(query, headers, columns);
     }
 
-    // ---- VIEW GRADES ---- (unchanged)
+    // ---- VIEW GRADES ----
     public static void viewGrades() {
         config conf = new config();
         String query = "SELECT * FROM tbl_grades";
@@ -34,9 +34,11 @@ public class main {
 
     // ---- MAIN PROGRAM ----
     public static void main(String[] args) {
+
         Scanner sc = new Scanner(System.in);
         config conf = new config();
         config.connectDB();
+
         int choice;
         char cont;
 
@@ -62,6 +64,7 @@ public class main {
                     boolean loginSuccess = false;
 
                     while (loginAttempts < 3 && !loginSuccess) {
+
                         String qry = "SELECT * FROM tbl_users WHERE u_email = ? AND u_pass = ?";
                         java.util.List<java.util.Map<String, Object>> result =
                                 conf.fetchRecords(qry, em, hashedLoginPass);
@@ -97,7 +100,9 @@ public class main {
                             // ------------------------- REGISTRAR DASHBOARD -------------------------
                             if (type.equals("Registrar")) {
                                 boolean adminLoggedIn = true;
+
                                 while (adminLoggedIn) {
+
                                     System.out.println("\n===== REGISTRAR DASHBOARD =====");
                                     System.out.println("1. Manage Pending Accounts");
                                     System.out.println("2. Manage Subjects");
@@ -123,23 +128,53 @@ public class main {
                                         // ======================= MANAGE SUBJECTS =======================
                                         case 2:
                                             boolean subjectMenu = true;
+
                                             while (subjectMenu) {
                                                 System.out.println("\n===== MANAGE SUBJECTS =====");
-                                                System.out.println("1. View Subjects");
-                                                System.out.println("2. Add Subject");
-                                                System.out.println("3. Update Subject");
-                                                System.out.println("4. Delete Subject");
-                                                System.out.println("5. Back");
+                                                System.out.println("1. Assign Subject to Teacher");
+                                                System.out.println("2. View Subjects");
+                                                System.out.println("3. Add Subject");
+                                                System.out.println("4. Update Subject");
+                                                System.out.println("5. Delete Subject");
+                                                System.out.println("6. Back");
                                                 System.out.print("Choose: ");
                                                 int sOption = sc.nextInt();
                                                 sc.nextLine();
 
                                                 switch (sOption) {
+
+                                                    // -------- ASSIGN SUBJECT TO TEACHER --------
                                                     case 1:
+                                                        System.out.println("\n===== ASSIGN SUBJECT TO TEACHER =====");
+
+                                                        // Show teachers
+                                                        String teacherQuery = "SELECT u_id, u_name, u_email FROM tbl_users WHERE u_type='Teacher' AND u_status='Approved'";
+                                                        String[] tHead = {"Teacher ID", "Name", "Email"};
+                                                        String[] tCol = {"u_id", "u_name", "u_email"};
+                                                        conf.viewRecords(teacherQuery, tHead, tCol);
+
+                                                        System.out.print("Enter Teacher ID: ");
+                                                        int tid = sc.nextInt();
+
+                                                        // Show subjects
+                                                        viewSubjects();
+                                                        System.out.print("Enter Subject ID to assign: ");
+                                                        int subId = sc.nextInt();
+
+                                                        // Save assignment
+                                                        String assignSQL = "INSERT INTO tbl_connect (u_id, s_id) VALUES (?, ?)";
+                                                        conf.addRecord(assignSQL, tid, subId);
+
+                                                        System.out.println("Subject assigned successfully!");
+                                                        break;
+
+                                                    // -------- VIEW SUBJECTS --------
+                                                    case 2:
                                                         viewSubjects();
                                                         break;
 
-                                                    case 2:
+                                                    // -------- ADD SUBJECT --------
+                                                    case 3:
                                                         System.out.print("Enter subject code: ");
                                                         String scode = sc.nextLine();
                                                         System.out.print("Enter subject name: ");
@@ -151,15 +186,16 @@ public class main {
                                                         String y = sc.nextLine();
                                                         System.out.print("Enter semester: ");
                                                         String sem = sc.nextLine();
-                                                        System.out.print("Enter status: ");
-                                                        String status = sc.nextLine();
+                                                       
 
-                                                        String insertSub = "INSERT INTO tbl_subjects (s_code, s_name, units, y_level, sem, status) VALUES (?, ?, ?, ?, ?, ?)";
-                                                        conf.addRecord(insertSub, scode, sname, units, y, sem, status);
+                                                        String insertSub =
+                                                                "INSERT INTO tbl_subjects (s_code, s_name, units, y_level, sem) VALUES (?, ?, ?, ?, ?)";
+                                                        conf.addRecord(insertSub, scode, sname, units, y, sem);
                                                         System.out.println("Subject Added!");
                                                         break;
 
-                                                    case 3:
+                                                    // -------- UPDATE SUBJECT --------
+                                                    case 4:
                                                         viewSubjects();
                                                         System.out.print("Enter Subject ID to Update: ");
                                                         int sid = sc.nextInt();
@@ -177,12 +213,14 @@ public class main {
                                                         System.out.print("Enter new status: ");
                                                         String nstat = sc.nextLine();
 
-                                                        String updateSub = "UPDATE tbl_subjects SET s_name = ?, units = ?, y_level = ?, sem = ?, status = ? WHERE s_id = ?";
+                                                        String updateSub =
+                                                                "UPDATE tbl_subjects SET s_name = ?, units = ?, y_level = ?, sem = ?, status = ? WHERE s_id = ?";
                                                         conf.updateRecord(updateSub, ns, nu, ny, nsem, nstat, sid);
                                                         System.out.println("Subject Updated!");
                                                         break;
 
-                                                    case 4:
+                                                    // -------- DELETE SUBJECT --------
+                                                    case 5:
                                                         viewSubjects();
                                                         System.out.print("Enter Subject ID to Delete: ");
                                                         int dsid = sc.nextInt();
@@ -191,7 +229,8 @@ public class main {
                                                         System.out.println("Subject Deleted!");
                                                         break;
 
-                                                    case 5:
+                                                    // -------- BACK --------
+                                                    case 6:
                                                         subjectMenu = false;
                                                         break;
                                                 }
@@ -201,6 +240,7 @@ public class main {
                                         // ======================= MANAGE GRADES =======================
                                         case 3:
                                             boolean gradeMenu = true;
+
                                             while (gradeMenu) {
                                                 System.out.println("\n===== MANAGE GRADES =====");
                                                 System.out.println("1. View Grades");
@@ -213,6 +253,7 @@ public class main {
                                                 sc.nextLine();
 
                                                 switch (gOption) {
+
                                                     case 1:
                                                         viewGrades();
                                                         break;
@@ -234,7 +275,8 @@ public class main {
                                                         System.out.print("Enter remarks: ");
                                                         String rem = sc.nextLine();
 
-                                                        String insGrade = "INSERT INTO tbl_grades(u_id, s_id, prelim, midterm, prefi, final, remarks) VALUES(?,?,?,?,?,?,?)";
+                                                        String insGrade =
+                                                                "INSERT INTO tbl_grades(u_id, s_id, prelim, midterm, prefi, final, remarks) VALUES(?,?,?,?,?,?,?)";
                                                         conf.addRecord(insGrade, guid, gsid, pre, mid, pf, fin, rem);
                                                         System.out.println("Grades Added!");
                                                         break;
@@ -255,7 +297,8 @@ public class main {
                                                         System.out.print("Enter new remarks: ");
                                                         String nrem = sc.nextLine();
 
-                                                        String updGrades = "UPDATE tbl_grades SET prelim=?, midterm=?, prefi=?, final=?, remarks=? WHERE g_id=?";
+                                                        String updGrades =
+                                                                "UPDATE tbl_grades SET prelim=?, midterm=?, prefi=?, final=?, remarks=? WHERE g_id=?";
                                                         conf.updateRecord(updGrades, npre, nmid, npf, nfin, nrem, gid);
                                                         System.out.println("Grades Updated!");
                                                         break;
@@ -295,7 +338,9 @@ public class main {
                                             System.out.print("Enter new type (1 = Registrar, 2 = Teacher, 3 = Student): ");
                                             int newType = sc.nextInt();
                                             sc.nextLine();
-                                            String tpe = (newType == 1) ? "Registrar" : (newType == 2) ? "Teacher" : "Student";
+                                            String tpe = (newType == 1) ? "Registrar"
+                                                    : (newType == 2) ? "Teacher"
+                                                    : "Student";
                                             System.out.print("Enter new password: ");
                                             String newPass = sc.nextLine();
                                             String hashedNewPass = config.hashPassword(newPass);
@@ -327,8 +372,23 @@ public class main {
                                 break;
                             }
 
-                            loginSuccess = true;
-                            System.out.println("Logging out...");
+                            // ====================== TEACHER DASHBOARD ======================
+                            else if (type.equals("Teacher")) {
+                                int teacherId = Integer.parseInt(user.get("u_id").toString());
+                                String teacherName = user.get("u_name").toString();
+                                teacher.displayTeacherDashboard(teacherId, teacherName);
+                                loginSuccess = true;
+                                break;
+                            }
+
+                            // ====================== STUDENT DASHBOARD ======================
+                            else if (type.equals("Student")) {
+                                int studentId = Integer.parseInt(user.get("u_id").toString());
+                                String studentName = user.get("u_name").toString();
+                                student.displayStudentDashboard(studentId, studentName);
+                                loginSuccess = true;
+                                break;
+                            }
                         }
                     }
                     break;
@@ -340,8 +400,10 @@ public class main {
                     System.out.print("Enter user email: ");
                     String email = sc.next();
                     System.out.print("Enter user Type (1 = Registrar, 2 = Teacher, 3 = Student): ");
-                    int type = sc.nextInt();
-                    String tp = (type == 1) ? "Registrar" : (type == 2) ? "Teacher" : "Student";
+                    int typeReg = sc.nextInt();
+                    String tp = (typeReg == 1) ? "Registrar"
+                            : (typeReg == 2) ? "Teacher"
+                            : "Student";
                     System.out.print("Enter Password: ");
                     String pass = sc.next();
                     String hashedPass = config.hashPassword(pass);
@@ -349,6 +411,7 @@ public class main {
                     String sql2 =
                             "INSERT INTO tbl_users (u_name, u_email, u_type, u_status, u_pass) VALUES (?, ?, ?, ?, ?)";
                     conf.addRecord(sql2, name, email, tp, "Pending", hashedPass);
+
                     System.out.println("Registration successful! Waiting for approval.");
                     break;
 
